@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionAI - Furniture, Architecture & Vehicle Detector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="logo-group">
+        <div class="logo-icon">👁️</div>
+        <div>
+          <h1 class="logo-title">VisionAI Detector</h1>
+          <p class="logo-subtitle">Offline Image Prediction for Furniture, Architecture & Vehicles</p>
+        </div>
+      </div>
+      <div class="badge-tag">
+        <span class="pulse-dot"></span> Offline / Upload Mode (No Webcam)
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="main-grid">
+      <!-- Left Column: Controls & Upload -->
+      <section class="card upload-card">
+        <h2 class="section-heading">1. Select or Upload Image</h2>
+        <p class="section-desc">Upload any downloaded picture from your device to predict furniture, interior elements, houses, or vehicles.</p>
+
+        <!-- Dropzone -->
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
+          <div class="dropzone-content" id="dropzoneContent">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text"><strong>Drag & Drop your picture here</strong></p>
+            <p class="upload-subtext">or click to browse from your computer</p>
+            <span class="file-types">Supports: JPG, PNG, WEBP</span>
+          </div>
+          <div class="preview-container" id="previewContainer" style="display: none;">
+            <img id="imagePreview" alt="Selected Image Preview" class="img-preview">
+            <button class="remove-btn" id="removeImgBtn" title="Remove image">✕</button>
+          </div>
+        </div>
+
+        <!-- Sample Images Carousel/Gallery -->
+        <div class="sample-section">
+          <label class="control-label">Or test with downloaded sample pictures:</label>
+          <div class="sample-grid" id="sampleGrid">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="section-heading">2. Detection Settings</h2>
+        
+        <!-- Model Selector -->
+        <div class="form-group">
+          <label class="control-label" for="modelSelect">Detection Engine:</label>
+          <select id="modelSelect" class="form-select">
+            <option value="coco" selected>Standard YOLOv8 (Furniture: Chairs, Beds, Tables, Couches + Vehicles: Cars, Trucks, Buses, Bikes)</option>
+            <option value="world">YOLO-World Open-Vocabulary (Windows, Curtains, Glass, Houses, Furniture, Vehicles)</option>
+          </select>
+        </div>
+
+        <!-- Confidence Slider -->
+        <div class="form-group">
+          <div class="slider-header">
+            <label class="control-label" for="confSlider">Confidence Threshold:</label>
+            <span class="slider-val" id="confVal">25%</span>
+          </div>
+          <input type="range" id="confSlider" min="5" max="95" value="25" class="range-slider">
+          <div class="slider-scale">
+            <span>5% (Detect More)</span>
+            <span>95% (High Certainty)</span>
+          </div>
+        </div>
+
+        <!-- Predict Button -->
+        <button id="predictBtn" class="btn-primary" disabled>
+          <span class="btn-icon">⚡</span> Run Prediction on Picture
+        </button>
+      </section>
+
+      <!-- Right Column: Results & HUD -->
+      <section class="card results-card" id="resultsCard">
+        <div class="results-header">
+          <div>
+            <h2 class="section-heading">3. Prediction Results</h2>
+            <p class="section-desc" id="statusMessage">Upload or pick a downloaded picture and click "Run Prediction"</p>
+          </div>
+          <div class="view-toggles" id="viewToggles" style="display: none;">
+            <button class="btn-toggle active" data-view="annotated">Detection View</button>
+            <button class="btn-toggle" data-view="original">Original Picture</button>
+            <button class="btn-toggle" data-view="split">Side by Side</button>
+          </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="spinner-container" id="loadingSpinner" style="display: none;">
+          <div class="loader"></div>
+          <p class="loading-text">Analyzing image & detecting furniture, architecture, and vehicles...</p>
+        </div>
+
+        <!-- Visual Display Box -->
+        <div class="viewer-box" id="viewerBox">
+          <!-- Placeholder state -->
+          <div class="placeholder-state" id="emptyPlaceholder">
+            <div class="placeholder-art">🖼️</div>
+            <h3>No picture analyzed yet</h3>
+            <p>Select a downloaded picture on the left to see instant detections, bounding boxes, and item breakdown.</p>
+          </div>
+
+          <!-- Single Image View -->
+          <div class="single-view" id="singleView" style="display: none;">
+            <img id="resultImage" class="main-result-img" alt="Prediction View">
+          </div>
+
+          <!-- Side-by-Side Split View -->
+          <div class="split-view" id="splitView" style="display: none;">
+            <div class="split-col">
+              <span class="split-badge">Original Picture</span>
+              <img id="splitOriginal" class="split-img" alt="Original">
+            </div>
+            <div class="split-col">
+              <span class="split-badge">Predicted Detections</span>
+              <img id="splitAnnotated" class="split-img" alt="Annotated">
+            </div>
+          </div>
+        </div>
+
+        <!-- Detection Metrics HUD -->
+        <div class="hud-stats" id="hudStats" style="display: none;">
+          <div class="stat-pill stat-total">
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">Total Objects</div>
+          </div>
+          <div class="stat-pill stat-furniture">
+            <div class="stat-num" id="statFurniture">0</div>
+            <div class="stat-label">Furniture</div>
+          </div>
+          <div class="stat-pill stat-architecture">
+            <div class="stat-num" id="statArchitecture">0</div>
+            <div class="stat-label">Architecture / Interior</div>
+          </div>
+          <div class="stat-pill stat-vehicles">
+            <div class="stat-num" id="statVehicles">0</div>
+            <div class="stat-label">Vehicles</div>
+          </div>
+          <div class="stat-pill stat-time">
+            <div class="stat-num" id="statTime">0 ms</div>
+            <div class="stat-label">Speed</div>
+          </div>
+        </div>
+
+        <!-- Detected Objects List -->
+        <div class="detections-list-section" id="detectionsSection" style="display: none;">
+          <div class="section-sub-header">
+            <h3>Identified Items Breakdown</h3>
+            <div class="export-actions">
+              <button class="btn-outline" id="downloadImgBtn">📥 Save Annotated Image</button>
+              <button class="btn-outline" id="exportJsonBtn">📋 Export JSON</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="detections-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Category</th>
+                  <th>Identified Object</th>
+                  <th>Confidence</th>
+                  <th>Box Coordinates</th>
+                </tr>
+              </thead>
+              <tbody id="detectionsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>VisionAI Offline Picture Prediction System &bull; Powered by Ultralytics YOLO &bull; Tailored for Furniture, Architecture & Vehicles</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

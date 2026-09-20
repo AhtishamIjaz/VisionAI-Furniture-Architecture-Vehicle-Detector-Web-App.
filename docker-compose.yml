@@ -1,0 +1,13 @@
+services:
+  visionai-detector:
+    image: ahtishamijaz55/visionai-detector:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visionai-detector
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=5000
