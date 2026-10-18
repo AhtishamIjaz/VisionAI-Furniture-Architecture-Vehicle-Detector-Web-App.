@@ -1,49 +1,44 @@
-# Use lightweight official Python runtime
+# Use lightweight Python 3.11 slim image
 FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=5000
+    PORT=5050
 
-# Install system dependencies required by OpenCV and Git
+# Install system dependencies needed for image processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
     libglib2.0-0 \
     libgomp1 \
-    git \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
-
-# Install PyTorch CPU first (keeps image compact and fast)
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-# Install application dependencies
+# Copy dependency requirements first (layer caching)
 COPY requirements.txt .
+
+# Install dependencies cleanly
 RUN pip install --no-cache-dir -r requirements.txt
-# Ensure opencv headless is present
-RUN pip install --no-cache-dir opencv-python-headless
-# Install clip for YOLO-World support
-RUN pip install --no-cache-dir git+https://github.com/ultralytics/CLIP.git
 
-# Copy project files
-COPY . .
+# Copy application files, templates, static assets and preloaded models
+COPY app.py .
+COPY yolo11m.onnx .
+COPY templates ./templates
+COPY static ./static
+COPY sample_interior.jpg .
+COPY sample_bedroom.jpg .
+COPY sample_dining.jpg .
 
-# Create uploads directory
-RUN mkdir -p uploads samples
+# Create writable upload/result directories
+RUN mkdir -p static/uploads static/results
 
-# Expose port
-EXPOSE 5000
+# Expose port 5050
+EXPOSE 5050
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:5000/api/samples || exit 1
+# Health check so Docker knows when the app is ready
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:5050/ || exit 1
 
-# Start Flask application
-CMD ["python", "app.py"]
+# Run with Gunicorn production WSGI server
+CMD ["gunicorn", "--bind", "0.0.0.0:5050", "--workers", "2", "--timeout", "120", "app:app"]

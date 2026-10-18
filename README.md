@@ -1,61 +1,66 @@
-# VisionAI: Furniture, Architecture & Vehicle Detector (Offline Image Prediction)
-
-A modern, fast, and intuitive offline computer vision web application designed specifically for **predicting objects from downloaded/uploaded photos** (No live webcams or video streams).
-
----
-
-## 🚀 Key Features
-
-1. **Pure Offline Image Prediction**:
-   - Simply drag and drop or browse any picture downloaded from the internet or your camera roll.
-   - Click **Run Prediction** to detect all objects.
-
-2. **Specialized Detected Categories**:
-   - **Furniture**: Chairs, Dining Tables, Beds, Couches/Sofas, Desks, Bookshelves, Wardrobes, Benches.
-   - **Architecture & Interior**: Windows, Curtains, Glass/Doors, Houses, Buildings, Lamps, Mirrors.
-   - **Vehicles**: Cars, Trucks, Buses, Motorcycles, Bicycles, Vans, Boats.
-
-3. **Dual AI Model Engine**:
-   - **YOLO-World (Open-Vocabulary)**: Detects fine-grained interior and architectural features like curtains, windows, glass, and houses.
-   - **YOLOv8 Standard (COCO)**: High-accuracy detection for standard furniture, vehicles, and objects.
-
-4. **Modern Interactive Dashboard**:
-   - **Visual Comparison**: Toggle between Detection View (with color-coded boxes and confidence badges), Original Image, or Side-by-Side Split View.
-   - **Statistics HUD**: Instant counters for Total Objects, Furniture, Architecture, Vehicles, and Inference Speed.
-   - **Interactive Table**: Ranked object list with confidence % bars and coordinates.
-   - **Export Tools**: Save annotated image (JPEG) or export the detection report (JSON).
-   - **Bundled Sample Gallery**: Pre-loaded pictures for instant 1-click testing.
+# 📦 AI-Based Smart Product Identification System
+**Supervisor: Dr. Zaki Hassan | Group 13**
+*Presented by Muhammad Aman Munir Abbasi & Syed Danish Javaid Gardazi*
 
 ---
 
-## 🏃 Quick Start
+## 📌 Project Overview
+Traditional room classification models merely predict a coarse label (e.g. "Bedroom" or "Living Room") from an image without understanding **what is inside the room**. Supervisors and real-world applications require granular object-level intelligence.
 
-### Method 1: Double-Click Launcher (Easiest)
-Double-click `run_app.bat` in this folder. It will start the server and automatically open your web browser at:
-```
-http://127.0.0.1:5000
-```
-
-### Method 2: Command Line
-```bash
-python app.py
-```
-Then open `http://127.0.0.1:5000` in Google Chrome or your favorite browser.
+This project delivers:
+1. **Automated Furniture & Item Counting**: Detects and tallies individual objects (sofas, beds, chairs, dining tables, monitors, plants, appliances).
+2. **Contextual Room Classification**: Synthesizes the detected object counts to determine the functional room category (Living Room, Bedroom, Dining Room, Kitchen, Office).
+3. **Interactive Web Dashboard**: An upload-and-analyze interface with visual bounding boxes, category chips, and capacity metrics.
+4. **Jupyter Notebook (`room_object_counter.ipynb`)**: Ready for academic demonstration, evaluation, and supervisor review.
 
 ---
 
-## 📂 Project Structure
-```
-VisionAI-Detector/
-├── app.py                 # Flask web server & REST API
-├── detector.py            # AI inference engine (YOLOv8 + YOLO-World)
-├── run_app.bat            # 1-click batch launcher
-├── models/                # Local weights (yolov8m.pt, yolov8s-worldv2.pt)
-├── samples/               # Bundled sample downloaded images
-├── static/
-│   ├── css/style.css      # Dark glassmorphism UI styles
-│   └── js/app.js          # Interactive frontend logic & AJAX
-├── templates/
-│   └── index.html         # Web application page
-└── uploads/               # Uploaded images cache
-```
+## 🛠️ Architecture & Technologies
+- **Deep Learning Model**: YOLOv11 / YOLOv8 ONNX optimized detector.
+- **Inference Runtime**: `onnxruntime` & `OpenCV` (ultra-fast, CPU & GPU compatible, zero Torch DLL crashes).
+- **Computer Vision**: Non-Maximum Suppression (NMS), aspect-ratio preserving letterboxing, dynamic bounding box rendering.
+- **Backend**: Flask REST API.
+- **Frontend**: Modern responsive dashboard with drag-and-drop file upload.
+
+---
+
+## 🚀 How to Run the Web Application
+
+1. Open PowerShell or Command Prompt in this folder:
+   ```powershell
+   cd C:\Users\NexGen\Desktop\RoomAnalyzer
+   ```
+
+2. Start the server:
+   ```powershell
+   python app.py
+   ```
+
+3. Open your browser and navigate to:
+   ```
+   http://127.0.0.1:5050
+   ```
+
+4. Drag and drop any room photo:
+   - The system immediately bounds and labels every detected object.
+   - Shows the exact inventory: *"3 Sofas, 1 Chair, 4 Plants..."*
+   - Predicts the room classification with confidence scores and reasoning.
+
+---
+
+## 📓 Running the Jupyter Notebook
+If the supervisor asks to inspect code directly in Jupyter:
+1. Launch Jupyter Notebook:
+   ```powershell
+   jupyter notebook room_object_counter.ipynb
+   ```
+2. Run all cells sequentially to see the step-by-step loading, inference, object counts, and matplotlib plot.
+
+---
+
+## 📊 Summary of Room Heuristics & Spatial Mapping
+- **Bedroom**: Prioritizes `bed`, personal monitors/TVs.
+- **Living Room**: Prioritizes multiple `couch`/sofas, coffee tables, lounge seating, TV.
+- **Dining Room**: Prioritizes `dining table` surrounded by multi-count `chair`.
+- **Kitchen**: Prioritizes appliances (`refrigerator`, `oven`, `microwave`, `sink`).
+- **Office / Study**: Prioritizes `laptop`, desk surfaces, chairs, and study accessories.

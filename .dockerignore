@@ -2,12 +2,10 @@ __pycache__
 *.pyc
 *.pyo
 *.pyd
-.Python
-env/
-venv/
-.venv/
 .git
 .gitignore
-test_*.py
-uploads/*
-!uploads/.gitkeep
+.env
+static/uploads/*
+static/results/*
+yolo11n.onnx
+sample_living_room.jpg

@@ -1,199 +1,698 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VisionAI - Furniture, Architecture & Vehicle Detector</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Based Smart Product Identification System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 40, 0.9);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 65%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      padding: 40px 20px 20px;
+      text-align: center;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+    }
+    .badge-pill::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22c55e;
+    }
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 26px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      margin-bottom: 24px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 1-Click Samples Bar */
+    .samples-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .samples-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .sample-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .sample-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #6366f1;
+      transform: translateY(-2px);
+    }
+
+    /* Upload Zone */
+    #drop-zone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      background: rgba(10, 15, 28, 0.5);
+      border-radius: 16px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #drop-zone:hover, #drop-zone.dragover {
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .upload-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+    #drop-zone p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    #drop-zone strong { color: #818cf8; }
+
+    #preview-wrap {
+      margin-top: 18px;
+      display: none;
+      text-align: center;
+    }
+    #preview-img {
+      max-width: 100%;
+      max-height: 340px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Settings Control Bar */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .slider-wrap input[type=range] {
+      accent-color: #6366f1;
+      cursor: pointer;
+      width: 130px;
+    }
+    .slider-val {
+      font-family: var(--font-mono);
+      color: #a5b4fc;
+      font-weight: 700;
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+      color: #fff;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4);
+    }
+    .btn-run:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
+    }
+    .btn-run:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Results Layout */
+    #results-panel { display: none; }
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+    }
+    @media (max-width: 960px) {
+      .grid-main { grid-template-columns: 1fr; }
+    }
+
+    #annotated-img {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      background: #000;
+      max-height: 480px;
+      object-fit: contain;
+    }
+
+    /* Hero Headline Box */
+    .statement-box {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.18) 0%, rgba(219, 39, 119, 0.12) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .statement-headline {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .statement-sub {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+    .statement-sub strong { color: #38bdf8; }
+
+    /* Room Predictions Breakdown */
+    .room-prediction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .pred-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+    .pred-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .pred-header.primary {
+      color: #a5b4fc;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      border-radius: 9999px;
+      transition: width 0.6s ease;
+    }
+
+    /* Metric Grid (Sofas, Beds, Chairs, Capacity) */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .metric-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .metric-num {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+    .metric-name {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    /* Inventory Chips */
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .item-chip {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chip-icon { font-size: 1.5rem; }
+    .chip-details { text-align: left; }
+    .chip-count {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #a5b4fc;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+    .chip-name {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Supervisor Key Insights */
+    .takeaways-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .takeaways-list li {
+      background: rgba(15, 23, 42, 0.5);
+      border-left: 4px solid #6366f1;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+    .takeaways-list li strong {
+      color: #ffffff;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 14px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="navbar">
-      <div class="logo-group">
-        <div class="logo-icon">👁️</div>
-        <div>
-          <h1 class="logo-title">VisionAI Detector</h1>
-          <p class="logo-subtitle">Offline Image Prediction for Furniture, Architecture & Vehicles</p>
-        </div>
+
+  <header>
+    <div class="badge-pill">YOLO Neural Network · Group 13 · Supervisor: Dr. Zaki Hassan</div>
+    <h1>AI-Based Smart Product Identification System</h1>
+    <p>Autonomous AI product and object identification, spatial localization, and automated item counting.</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Upload & Controls Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📷 Select Image or Try Preloaded Room Samples</span>
+        <span style="font-size:0.85rem; color:var(--accent-emerald); font-weight:600;">● Model: YOLO11-Medium (High Accuracy)</span>
       </div>
-      <div class="badge-tag">
-        <span class="pulse-dot"></span> Offline / Upload Mode (No Webcam)
+
+      <!-- Quick 1-Click Samples -->
+      <div class="samples-bar">
+        <span class="samples-label">1-Click Test Samples:</span>
+        <button class="sample-btn" onclick="loadSample('living')">🛋️ Living Room (Multi-sofa)</button>
+        <button class="sample-btn" onclick="loadSample('bedroom')">🛏️ Bedroom (Beds & Laptop)</button>
+        <button class="sample-btn" onclick="loadSample('dining')">🍽️ Dining Hall (Chairs & Table)</button>
       </div>
-    </header>
 
-    <!-- Main Content Layout -->
-    <main class="main-grid">
-      <!-- Left Column: Controls & Upload -->
-      <section class="card upload-card">
-        <h2 class="section-heading">1. Select or Upload Image</h2>
-        <p class="section-desc">Upload any downloaded picture from your device to predict furniture, interior elements, houses, or vehicles.</p>
+      <!-- Drop Zone -->
+      <div id="drop-zone">
+        <span class="upload-icon">📂</span>
+        <p>Drag and drop any room photo from your computer, or <strong>click to browse</strong></p>
+        <p style="font-size:0.8rem; margin-top:6px; color:#64748b;">Supports high-res JPG, PNG, WEBP</p>
+        <input type="file" id="file-input" style="display:none;" accept=".jpg,.jpeg,.png,.webp" />
+      </div>
 
-        <!-- Dropzone -->
-        <div class="dropzone" id="dropzone">
-          <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
-          <div class="dropzone-content" id="dropzoneContent">
-            <div class="upload-icon">📁</div>
-            <p class="upload-text"><strong>Drag & Drop your picture here</strong></p>
-            <p class="upload-subtext">or click to browse from your computer</p>
-            <span class="file-types">Supports: JPG, PNG, WEBP</span>
-          </div>
-          <div class="preview-container" id="previewContainer" style="display: none;">
-            <img id="imagePreview" alt="Selected Image Preview" class="img-preview">
-            <button class="remove-btn" id="removeImgBtn" title="Remove image">✕</button>
-          </div>
+      <div id="preview-wrap">
+        <img id="preview-img" src="" alt="Selected Room" />
+      </div>
+
+      <div class="controls-row">
+        <div class="slider-wrap">
+          <span>Detection Sensitivity:</span>
+          <input type="range" id="conf-slider" min="0.10" max="0.50" step="0.02" value="0.18" oninput="updateSlider(this.value)">
+          <span class="slider-val" id="slider-val">0.18</span>
         </div>
 
-        <!-- Sample Images Carousel/Gallery -->
-        <div class="sample-section">
-          <label class="control-label">Or test with downloaded sample pictures:</label>
-          <div class="sample-grid" id="sampleGrid">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-
-        <hr class="divider">
-
-        <h2 class="section-heading">2. Detection Settings</h2>
-        
-        <!-- Model Selector -->
-        <div class="form-group">
-          <label class="control-label" for="modelSelect">Detection Engine:</label>
-          <select id="modelSelect" class="form-select">
-            <option value="coco" selected>Standard YOLOv8 (Furniture: Chairs, Beds, Tables, Couches + Vehicles: Cars, Trucks, Buses, Bikes)</option>
-            <option value="world">YOLO-World Open-Vocabulary (Windows, Curtains, Glass, Houses, Furniture, Vehicles)</option>
-          </select>
-        </div>
-
-        <!-- Confidence Slider -->
-        <div class="form-group">
-          <div class="slider-header">
-            <label class="control-label" for="confSlider">Confidence Threshold:</label>
-            <span class="slider-val" id="confVal">25%</span>
-          </div>
-          <input type="range" id="confSlider" min="5" max="95" value="25" class="range-slider">
-          <div class="slider-scale">
-            <span>5% (Detect More)</span>
-            <span>95% (High Certainty)</span>
-          </div>
-        </div>
-
-        <!-- Predict Button -->
-        <button id="predictBtn" class="btn-primary" disabled>
-          <span class="btn-icon">⚡</span> Run Prediction on Picture
+        <button id="run-btn" class="btn-run" disabled>
+          <span id="btn-icon">⚡</span>
+          <span id="btn-text">Select Image to Begin Analysis</span>
         </button>
-      </section>
+      </div>
 
-      <!-- Right Column: Results & HUD -->
-      <section class="card results-card" id="resultsCard">
-        <div class="results-header">
-          <div>
-            <h2 class="section-heading">3. Prediction Results</h2>
-            <p class="section-desc" id="statusMessage">Upload or pick a downloaded picture and click "Run Prediction"</p>
+      <div id="error-box" class="error-box"></div>
+    </div>
+
+    <!-- Results Display -->
+    <div id="results-panel">
+
+      <!-- Hero Statement Box -->
+      <div class="statement-box">
+        <div class="statement-headline" id="statement-headline">Autonomous analysis detected 0 objects.</div>
+        <div class="statement-sub" id="statement-sub">In this room, the system detected: <strong>No items</strong>.</div>
+      </div>
+
+      <div class="grid-main">
+
+        <!-- Annotated Visual Image -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🎯 Object Detection & Localization</span>
+            <span id="total-badge" style="font-family:var(--font-mono); background:rgba(99,102,241,0.2); padding:4px 10px; border-radius:8px; color:#a5b4fc; font-weight:700;">0 Detections</span>
           </div>
-          <div class="view-toggles" id="viewToggles" style="display: none;">
-            <button class="btn-toggle active" data-view="annotated">Detection View</button>
-            <button class="btn-toggle" data-view="original">Original Picture</button>
-            <button class="btn-toggle" data-view="split">Side by Side</button>
-          </div>
+          <img id="annotated-img" src="" alt="Annotated Room Detection" />
         </div>
 
-        <!-- Loading Overlay -->
-        <div class="spinner-container" id="loadingSpinner" style="display: none;">
-          <div class="loader"></div>
-          <p class="loading-text">Analyzing image & detecting furniture, architecture, and vehicles...</p>
-        </div>
-
-        <!-- Visual Display Box -->
-        <div class="viewer-box" id="viewerBox">
-          <!-- Placeholder state -->
-          <div class="placeholder-state" id="emptyPlaceholder">
-            <div class="placeholder-art">🖼️</div>
-            <h3>No picture analyzed yet</h3>
-            <p>Select a downloaded picture on the left to see instant detections, bounding boxes, and item breakdown.</p>
+        <!-- Room Predictions & Key Metrics -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📊 Room Classification Probabilities</span>
           </div>
 
-          <!-- Single Image View -->
-          <div class="single-view" id="singleView" style="display: none;">
-            <img id="resultImage" class="main-result-img" alt="Prediction View">
-          </div>
+          <!-- Predictions Bar List -->
+          <div class="room-prediction-list" id="prediction-list"></div>
 
-          <!-- Side-by-Side Split View -->
-          <div class="split-view" id="splitView" style="display: none;">
-            <div class="split-col">
-              <span class="split-badge">Original Picture</span>
-              <img id="splitOriginal" class="split-img" alt="Original">
+          <!-- Quick Metrics (Supervisor requested: Sofas, Beds, Chairs, Capacity) -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-num" id="m-sofas">0</div>
+              <div class="metric-name">🛋️ Sofas Count</div>
             </div>
-            <div class="split-col">
-              <span class="split-badge">Predicted Detections</span>
-              <img id="splitAnnotated" class="split-img" alt="Annotated">
+            <div class="metric-card">
+              <div class="metric-num" id="m-beds">0</div>
+              <div class="metric-name">🛏️ Beds Count</div>
             </div>
-          </div>
-        </div>
-
-        <!-- Detection Metrics HUD -->
-        <div class="hud-stats" id="hudStats" style="display: none;">
-          <div class="stat-pill stat-total">
-            <div class="stat-num" id="statTotal">0</div>
-            <div class="stat-label">Total Objects</div>
-          </div>
-          <div class="stat-pill stat-furniture">
-            <div class="stat-num" id="statFurniture">0</div>
-            <div class="stat-label">Furniture</div>
-          </div>
-          <div class="stat-pill stat-architecture">
-            <div class="stat-num" id="statArchitecture">0</div>
-            <div class="stat-label">Architecture / Interior</div>
-          </div>
-          <div class="stat-pill stat-vehicles">
-            <div class="stat-num" id="statVehicles">0</div>
-            <div class="stat-label">Vehicles</div>
-          </div>
-          <div class="stat-pill stat-time">
-            <div class="stat-num" id="statTime">0 ms</div>
-            <div class="stat-label">Speed</div>
-          </div>
-        </div>
-
-        <!-- Detected Objects List -->
-        <div class="detections-list-section" id="detectionsSection" style="display: none;">
-          <div class="section-sub-header">
-            <h3>Identified Items Breakdown</h3>
-            <div class="export-actions">
-              <button class="btn-outline" id="downloadImgBtn">📥 Save Annotated Image</button>
-              <button class="btn-outline" id="exportJsonBtn">📋 Export JSON</button>
+            <div class="metric-card">
+              <div class="metric-num" id="m-chairs">0</div>
+              <div class="metric-name">🪑 Chairs Count</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-num" id="m-capacity">0</div>
+              <div class="metric-name">👥 Seating Capacity</div>
             </div>
           </div>
 
-          <div class="table-container">
-            <table class="detections-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Category</th>
-                  <th>Identified Object</th>
-                  <th>Confidence</th>
-                  <th>Box Coordinates</th>
-                </tr>
-              </thead>
-              <tbody id="detectionsTableBody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </main>
+          <!-- Detailed Item Breakdown -->
+          <div class="card-title" style="font-size:0.95rem; margin-bottom:12px;">Full Object Inventory</div>
+          <div class="inventory-grid" id="inventory-grid"></div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <p>VisionAI Offline Picture Prediction System &bull; Powered by Ultralytics YOLO &bull; Tailored for Furniture, Architecture & Vehicles</p>
-    </footer>
+        </div>
+
+      </div>
+
+      <!-- Supervisor Key Takeaways & Defense Points -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📑 Academic Evaluation & Defense Summary</span>
+        </div>
+        <ul class="takeaways-list" id="takeaways-list"></ul>
+      </div>
+
+    </div>
+
   </div>
 
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewWrap = document.getElementById('preview-wrap');
+    const previewImg = document.getElementById('preview-img');
+    const runBtn = document.getElementById('run-btn');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnText = document.getElementById('btn-text');
+    const errorBox = document.getElementById('error-box');
+    const resultsPanel = document.getElementById('results-panel');
+
+    let currentFile = null;
+    let selectedSample = null;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function updateSlider(val) {
+      document.getElementById('slider-val').textContent = parseFloat(val).toFixed(2);
+    }
+
+    function handleFile(file) {
+      selectedSample = null;
+      currentFile = file;
+      previewImg.src = URL.createObjectURL(file);
+      previewWrap.style.display = 'block';
+      readyButton();
+    }
+
+    function loadSample(name) {
+      currentFile = null;
+      selectedSample = name;
+      previewImg.src = '/sample/' + name;
+      previewWrap.style.display = 'block';
+      readyButton();
+      // Auto run on sample click for fast demonstration
+      executeAnalysis();
+    }
+
+    function readyButton() {
+      runBtn.disabled = false;
+      btnIcon.textContent = '⚡';
+      btnText.textContent = 'Count Objects & Predict Room';
+      errorBox.style.display = 'none';
+    }
+
+    runBtn.addEventListener('click', () => executeAnalysis());
+
+    async function executeAnalysis() {
+      if (!currentFile && !selectedSample) return;
+
+      runBtn.disabled = true;
+      btnIcon.innerHTML = '<div class="spinner"></div>';
+      btnText.textContent = 'Evaluating Neural Network...';
+      errorBox.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('confidence_threshold', document.getElementById('conf-slider').value);
+
+      if (selectedSample) {
+        formData.append('sample_name', selectedSample);
+      } else if (currentFile) {
+        formData.append('file', currentFile);
+      }
+
+      try {
+        const res = await fetch('/analyze', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          errorBox.textContent = data.error || 'Server error occurred during processing';
+          errorBox.style.display = 'block';
+          return;
+        }
+
+        renderDashboard(data);
+      } catch (err) {
+        errorBox.textContent = 'Network or connection error: ' + err.message;
+        errorBox.style.display = 'block';
+      } finally {
+        runBtn.disabled = false;
+        btnIcon.textContent = '🔄';
+        btnText.textContent = 'Re-Analyze Image';
+      }
+    }
+
+    function renderDashboard(data) {
+      // 1. Image and badge
+      document.getElementById('annotated-img').src = 'data:image/jpeg;base64,' + data.image_b64;
+      document.getElementById('total-badge').textContent = data.total + ' Objects Detected';
+
+      // 2. Headline Statements
+      document.getElementById('statement-headline').textContent = data.report.headline;
+      document.getElementById('statement-sub').innerHTML = data.report.direct_sentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      // 3. Metric cards
+      document.getElementById('m-sofas').textContent = data.report.sofas_count;
+      document.getElementById('m-beds').textContent = data.report.beds_count;
+      document.getElementById('m-chairs').textContent = data.report.chairs_count;
+      document.getElementById('m-capacity').textContent = data.report.seating_capacity + ' ppl';
+
+      // 4. Probability progress bars
+      const predList = document.getElementById('prediction-list');
+      predList.innerHTML = '';
+      data.predictions.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'pred-row';
+        div.innerHTML = `
+          <div class="pred-header ${p.is_primary ? 'primary' : ''}">
+            <span>${p.is_primary ? '★ ' : ''}${p.name}</span>
+            <span style="font-family:var(--font-mono);">${p.prob}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${p.prob}%;"></div>
+          </div>
+        `;
+        predList.appendChild(div);
+      });
+
+      // 5. Inventory Chips
+      const invGrid = document.getElementById('inventory-grid');
+      invGrid.innerHTML = '';
+      if (data.items.length === 0) {
+        invGrid.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No standard furniture detected. Try lowering detection sensitivity.</span>';
+      } else {
+        data.items.forEach(it => {
+          const chip = document.createElement('div');
+          chip.className = 'item-chip';
+          chip.innerHTML = `
+            <div class="chip-icon">${it.icon}</div>
+            <div class="chip-details">
+              <div class="chip-count">${it.count}</div>
+              <div class="chip-name">${it.name}</div>
+            </div>
+          `;
+          invGrid.appendChild(chip);
+        });
+      }
+
+      // 6. Supervisor defense bullet points
+      const takeaways = document.getElementById('takeaways-list');
+      takeaways.innerHTML = '';
+      data.report.key_takeaways.forEach(point => {
+        const li = document.createElement('li');
+        li.innerHTML = point.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        takeaways.appendChild(li);
+      });
+
+      resultsPanel.style.display = 'block';
+      resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
 </body>
 </html>
